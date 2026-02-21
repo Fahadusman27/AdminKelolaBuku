@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
@@ -32,22 +32,27 @@ class AuthController extends Controller
 
         // Validasi kredensial login
         if (Auth::attempt($credentials)) {
-            // Jika login berhasil, arahkan berdasarkan role pengguna
+            
+            // WAJIB ADA: Agar session login tidak hilang/nyangkut
+            $request->session()->regenerate();
+
             $user = Auth::user();
+
+            // Arahkan berdasarkan role pengguna
             if ($user->role === 'admin') {
-                return redirect()->intended('/dashboard');
+                return redirect()->intended('/dashboard/mahasiswa');
             } elseif ($user->role === 'mhs') {
                 return redirect()->intended('/');
-            }
-            if ($user->role === 'guest') {
+            } elseif ($user->role === 'guest') {
                 return redirect()->intended('/username');
-            } elseif ($user->role === 'mhs') {
-                return redirect()->intended('/');
             }
+
+            // Fallback jika rolenya tidak ada yang cocok
+            return redirect()->intended('/');
         }
 
         // Jika login gagal
-        return redirect('/login')->withErrors(['email' => 'Email atau password salah']);
+        return back()->withErrors(['email' => 'Email atau password salah']);
     }
 
     /**
@@ -96,6 +101,48 @@ class AuthController extends Controller
         } else {
             return redirect('/');
         }
+    }
+
+    public function showForgotForm()
+    {
+        return view('auth.forgot-email'); // Memanggil file baru di langkah 1
+    }
+
+    public function verifyEmail(Request $request)
+    {
+        $request->validate(['email' => 'required|email']);
+
+        $user = \App\Models\User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors(['email' => 'Email tidak terdaftar.']);
+        }
+
+        // Memanggil view yang sudah kita buat/rename tadi
+        return view('auth.reset-password-direct', ['email' => $request->email]);
+    }
+    /**
+     * Langsung eksekusi perubahan password di database
+     */
+    public function updatePassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            // Update password menggunakan Hash (PENTING!)
+            $user->password = Hash::make($request->password); 
+            $user->save();
+
+            // Kirim pesan 'status' ke halaman login
+            return redirect('/login')->with('status', 'Password berhasil diubah. Silakan login kembali.');
+        }
+
+        return back()->withErrors(['email' => 'User tidak ditemukan.']);
     }
 
     /**

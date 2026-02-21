@@ -15,6 +15,19 @@
                 <div class="brand-logo">
                   <img src="../../assets/images/logo.svg" alt="logo">
                 </div>
+                @if (session('status'))
+                  <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    {{ session('status') }}
+                  </div>
+                @endif
+
+                @if ($errors->any())
+                  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @foreach ($errors->all() as $error)
+                      <li>{{ $error }}</li>
+                    @endforeach
+                  </div>
+                @endif
                 <h4>Hello! let's get started</h4>
                 <h6 class="font-weight-light">Sign in to continue.</h6>
                 <form class="pt-3" action="{{ route('login') }}" method="POST">
@@ -23,7 +36,12 @@
                     <input type="email" name="email" class="form-control form-control-lg" id="exampleInputEmail1" placeholder="Username" required>
                   </div>
                   <div class="form-group">
-                    <input type="password" name="password" class="form-control form-control-lg" id="exampleInputPassword1" placeholder="Password" required>
+                    <div class="input-group">
+                      <input type="password" name="password" class="form-control form-control-lg border-end-0" id="passwordInput" placeholder="Password" required>
+                        <span class="input-group-text bg-white" id="togglePassword" style="cursor: pointer;">
+                          <i class="ti-eye"></i>
+                        </span>
+                    </div>
                   </div>
                   <div class="mt-3 d-grid gap-2">
                     <button type="submit" class="btn btn-block btn-primary btn-lg font-weight-medium auth-form-btn">SIGN IN</button>
@@ -34,7 +52,7 @@
                         <input type="checkbox" class="form-check-input"> Keep me signed in
                       </label>
                     </div>
-                    <a href="#" class="auth-link text-black">Forgot password?</a>
+                    <a href="{{ route('password.request') }}" class="auth-link text-black">Forgot password?</a>
                   </div>
                   <div class="mb-2 d-grid gap-2">
                     <button type="button" class="btn btn-block btn-facebook auth-form-btn">
