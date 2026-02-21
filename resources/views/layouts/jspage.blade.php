@@ -5,3 +5,4 @@
 <script src="{{ asset('assets/js/dataTables.select.min.js') }}"></script>
 <script src="{{ asset('assets/js/jquery.cookie.js') }}" type="text/javascript"></script>
 <script src="{{ asset('assets/js/dashboard.js') }}"></script>
+<script src="{{ asset('assets/js/login.js')}}"></script>

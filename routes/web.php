@@ -14,6 +14,9 @@ Route::post('/login', [AuthController::class, 'login']);
 Route::get('/register', [AuthController::class, 'showRegisterForm'])->name('register');
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+Route::get('/forgot-password', [AuthController::class, 'showForgotForm'])->name('password.request');
+Route::post('/forgot-password', [AuthController::class, 'verifyEmail'])->name('password.email');
+Route::post('/update-password-direct', [AuthController::class, 'updatePassword'])->name('password.update.direct');
 
 // Dashboard Route
 Route::middleware(['auth'])->group(function () {
@@ -31,8 +34,12 @@ Route::middleware(['auth'])->group(function () {
 
 // Home Route (User)
 Route::get('/', function () {
-    return view('welcome');
-})->name('home');
+    if (Auth::check()) {
+        return view('dashboard');
+    }
+
+    return redirect()->route('login');
+});
 
 
 Route::get('username', [DashboardController::class, 'guest'])->name('username');
